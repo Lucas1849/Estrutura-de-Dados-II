@@ -25,7 +25,7 @@ class AvlTree:
             return y
 
     def __RotacaoLL(self, A):
-        print('RotacaoLL: ',A.info);
+        print('RotacaoLL: ',A.info)
         B = A.esq
         A.esq = B.dir
         B.dir = A
@@ -35,7 +35,7 @@ class AvlTree:
         return B
 
     def __RotacaoRR(self, A):
-        print('RotacaoRR: ',A.info);
+        print('RotacaoRR: ',A.info)
         B = A.dir
         A.dir = B.esq
         B.esq = A

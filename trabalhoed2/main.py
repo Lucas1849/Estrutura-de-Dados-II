@@ -1,4 +1,5 @@
 from avl import AvlTree
+from livro import Livro
 
 def main():
     palavras = AvlTree()
@@ -6,7 +7,7 @@ def main():
     insere_na_arvore(caminho_do_arquivo, palavras)
     
 
-#antes fazer um texte como uma lista
+#antes fazer um texto como uma lista
 def insere_na_arvore(arquivo_path, arvore):
     with open(arquivo_path,'r') as arquivo:
         texto = arquivo.readlines()
