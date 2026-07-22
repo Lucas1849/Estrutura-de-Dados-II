@@ -166,7 +166,7 @@ class AvlTree:
     def __emOrdem(self,raiz):
         if(raiz != None):
             self.__emOrdem(raiz.esq)
-            print("(",raiz.info, raiz.freq,") ", end=' ')
+            print("(",raiz.info.codigo, raiz.freq,") ", end=' ')
             self.__emOrdem(raiz.dir)
 
     def emOrdem(self):
