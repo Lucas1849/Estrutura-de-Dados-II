@@ -2,6 +2,8 @@ from no import NO
 class AvlTree:
     def __init__(self):
         self.__raiz = None
+        self.__rotacoesEsq = 0
+        self.__rotacoesDir = 0
 
     def elemRaiz(self):
         if (self.__raiz != None):
@@ -16,7 +18,7 @@ class AvlTree:
             return no.altura
 
     def __fatorBalanceamento(self, no):
-        return abs(self.__altura(no.esq) - self.__altura(no.dir))
+        return abs(self.__altura(no.esq) - self.__altura(no.dir))    
 
     def __maior(self, x, y):
         if(x > y):
@@ -25,7 +27,8 @@ class AvlTree:
             return y
 
     def __RotacaoLL(self, A):
-        print('RotacaoLL: ',A.info)
+        #print('RotacaoLL: ',A.info);
+        self.__rotacoesDir = self.__rotacoesDir + 1
         B = A.esq
         A.esq = B.dir
         B.dir = A
@@ -35,7 +38,8 @@ class AvlTree:
         return B
 
     def __RotacaoRR(self, A):
-        print('RotacaoRR: ',A.info)
+        #print('RotacaoRR: ',A.info);
+        self.__rotacoesEsq = self.__rotacoesEsq + 1
         B = A.dir
         A.dir = B.esq
         B.esq = A
@@ -48,7 +52,7 @@ class AvlTree:
         A.esq = self.__RotacaoRR(A.esq)
         A = self.__RotacaoLL(A)
         return A
-
+        
     def __RotacaoRL(self, A):
         A.dir = self.__RotacaoLL(A.dir)
         A = self.__RotacaoRR(A)
@@ -59,6 +63,7 @@ class AvlTree:
             novo = NO(valor)
             return novo
         else:
+            
             if(valor < atual.info):
                 atual.esq = self.__insereValor(atual.esq, valor)
                 if(self.__fatorBalanceamento(atual) >= 2):
@@ -66,16 +71,16 @@ class AvlTree:
                         atual = self.__RotacaoLL(atual)
                     else:
                         atual = self.__RotacaoLR(atual)
-            else:
+            elif (valor > atual.info):
                 atual.dir = self.__insereValor(atual.dir, valor)
                 if(self.__fatorBalanceamento(atual) >= 2):
                     if(valor > atual.dir.info):
                         atual = self.__RotacaoRR(atual)
                     else:
                         atual = self.__RotacaoRL(atual)
-
+            else: return
             atual.altura = self.__maior(self.__altura(atual.esq),self.__altura(atual.dir)) + 1
-            return atual
+            return atual                
 
     def insere(self, valor):
         if(self.buscafreq(valor)):
@@ -83,55 +88,7 @@ class AvlTree:
         else:
             self.__raiz = self.__insereValor(self.__raiz, valor)
             return True
-        
-    def __removeValor(self, atual, valor):
-        if(atual.info == valor): #achou o nó a ser removido
-            if(atual.esq == None or atual.dir == None): # nó tem 1 filho ou nenhum
-                if(atual.esq != None):
-                    atual = atual.esq
-                else:
-                    atual = atual.dir
 
-            else: # nó tem 2 filhos
-                temp = self.__procuraMenor(atual.dir)
-                atual.info = temp.info
-                atual.dir = self.__removeValor(atual.dir, atual.info)
-                if(self.__fatorBalanceamento(atual) >= 2):
-                    if(self.__altura(atual.esq.dir) <= self.__altura(atual.esq.esq)):
-                        atual = self.__RotacaoLL(atual)
-                    else:
-                        atual = self.__RotacaoLR(atual)
-
-            if(atual != None):
-                atual.altura = self.__maior(self.__altura(atual.esq),self.__altura(atual.dir)) + 1
-
-        else:# procura o nó a ser removido
-            if(valor < atual.info):
-                atual.esq = self.__removeValor(atual.esq, valor)
-                if(self.__fatorBalanceamento(atual) >= 2):
-                    if(self.__altura(atual.dir.esq) <= self.__altura(atual.dir.dir)):
-                        atual = self.__RotacaoRR(atual)
-                    else:
-                        atual = self.__RotacaoRL(atual)
-            else:
-                atual.dir = self.__removeValor(atual.dir, valor)
-                if(self.__fatorBalanceamento(atual) >= 2):
-                    if(self.__altura(atual.esq.dir) <= self.__altura(atual.esq.esq)):
-                        atual = self.__RotacaoLL(atual)
-                    else:
-                        atual = self.__RotacaoLR(atual)
-
-            atual.altura = self.__maior(self.__altura(atual.esq),self.__altura(atual.dir)) + 1
-
-        return atual
-
-    def remove(self, valor):
-        if(self.__raiz == None or not self.busca(valor)):
-            return False #árvore vazia ou valor não existe na árvore
-        else:
-            self.__raiz = self.__removeValor(self.__raiz, valor)
-            return True
-        
     def buscafreq(self, valor):
         if(self.__raiz == None):
             return False
@@ -155,16 +112,82 @@ class AvlTree:
         while(atual != None):
             if(valor == atual.info):
                 return True
-
+            
             if(valor > atual.info):
                 atual = atual.dir
             else:
                 atual = atual.esq
-
+        
         return False
 
-    def __emOrdem(self,raiz):
+    def __procuraMenor(self, atual):
+        no1 = atual
+        no2 = atual.esq
+        while(no2 != None):
+            no1 = no2
+            no2 = no2.esq
+        return no1
+
+    def __removeValor(self, atual, valor):
+        if(atual.info == valor): #achou o nó a ser removido
+            if(atual.esq == None or atual.dir == None): # nó tem 1 filho ou nenhum
+                if(atual.esq != None):
+                    atual = atual.esq
+                else:
+                    atual = atual.dir
+                
+            else: # nó tem 2 filhos
+                temp = self.__procuraMenor(atual.dir)
+                atual.info = temp.info
+                atual.dir = self.__removeValor(atual.dir, atual.info)
+                if(self.__fatorBalanceamento(atual) >= 2):
+                    if(self.__altura(atual.esq.dir) <= self.__altura(atual.esq.esq)):
+                        atual = self.__RotacaoLL(atual)
+                    else:
+                        atual = self.__RotacaoLR(atual)
+                        
+            if(atual != None):
+                atual.altura = self.__maior(self.__altura(atual.esq),self.__altura(atual.dir)) + 1
+
+        else:# procura o nó a ser removido
+            if(valor < atual.info):
+                atual.esq = self.__removeValor(atual.esq, valor)
+                if(self.__fatorBalanceamento(atual) >= 2):
+                    if(self.__altura(atual.dir.esq) <= self.__altura(atual.dir.dir)):
+                        atual = self.__RotacaoRR(atual)
+                    else:
+                        atual = self.__RotacaoRL(atual)                        
+            else:
+                atual.dir = self.__removeValor(atual.dir, valor)
+                if(self.__fatorBalanceamento(atual) >= 2):
+                    if(self.__altura(atual.esq.dir) <= self.__altura(atual.esq.esq)):
+                        atual = self.__RotacaoLL(atual)
+                    else:
+                        atual = self.__RotacaoLR(atual)
+
+            atual.altura = self.__maior(self.__altura(atual.esq),self.__altura(atual.dir)) + 1
+
+        return atual    
+    
+    def remove(self, valor):        
+        if(self.__raiz == None or not self.busca(valor)):
+            return False #árvore vazia ou valor não existe na árvore
+        else:
+            self.__raiz = self.__removeValor(self.__raiz, valor)
+            return True    
+
+    def __preOrdem(self,raiz):
         if(raiz != None):
+            print("(",raiz.info.codigo, raiz.freq,")")
+            self.__preOrdem(raiz.esq)
+            self.__preOrdem(raiz.dir)
+
+    def preOrdem(self):
+        if(self.__raiz != None):
+            self.__preOrdem(self.__raiz)
+
+    def __emOrdem(self,raiz):
+        if(raiz != None):            
             self.__emOrdem(raiz.esq)
             print("(",raiz.info.codigo, raiz.freq,") ", end=' ')
             self.__emOrdem(raiz.dir)
@@ -172,3 +195,40 @@ class AvlTree:
     def emOrdem(self):
         if(self.__raiz != None):
             self.__emOrdem(self.__raiz)
+        
+    def __posOrdem(self,raiz):
+        if(raiz != None):            
+            self.__posOrdem(raiz.esq)
+            self.__posOrdem(raiz.dir)
+            print("(",raiz.info.codigo, raiz.freq,")")
+
+    def posOrdem(self):
+        if(self.__raiz != None):
+            self.__posOrdem(self.__raiz)
+
+
+    def emNivel(self):
+        h = self.__altura(self.__raiz)
+        for i in range(0, h+1):
+            print('\n - Nivel ',i)
+            self.__imprimeNivel(self.__raiz, i)
+            
+ 
+ 
+    # Imprimir elementos que estão no mesmo nível
+    def __imprimeNivel(self, raiz, nivel):
+        if raiz is None:
+            return
+        if nivel == 0:
+            print("(",raiz.info.codigo, raiz.freq,") ", end=" ")
+        elif nivel > 0:
+            self.__imprimeNivel(raiz.esq, nivel-1)
+            self.__imprimeNivel(raiz.dir, nivel-1)
+
+
+    def rotacoes(self):
+        if self.__raiz is None:
+            return
+        else:
+            print('\n\n- Rotacoes a Esquerda: ',self.__rotacoesEsq)
+            print('- Rotacoes a Direita: ',self.__rotacoesDir)
