@@ -17,6 +17,28 @@ class AvlTree:
         else:
             return no.altura
 
+    #Versão pública do __altura, usando a raiz da árvore, pra não precisar expor o nó pra quem
+    #está usando a classe de fora
+    def altura(self):
+        return self.__altura(self.__raiz)
+
+    #Conta quantos nós existem na árvore percorrendo em ordem, sem depender de nenhum
+    #atributo guardado à parte
+    def __quantidadeElementos(self, raiz):
+        if(raiz == None):
+            return 0
+        else:
+            return 1 + self.__quantidadeElementos(raiz.esq) + self.__quantidadeElementos(raiz.dir)
+
+    def quantidadeElementos(self):
+        return self.__quantidadeElementos(self.__raiz)
+
+    def rotacoesEsquerda(self):
+        return self.__rotacoesEsq
+
+    def rotacoesDireita(self):
+        return self.__rotacoesDir
+
     def __fatorBalanceamento(self, no):
         return abs(self.__altura(no.esq) - self.__altura(no.dir))    
 
@@ -112,13 +134,51 @@ class AvlTree:
         while(atual != None):
             if(valor == atual.info):
                 return True
-            
+
             if(valor > atual.info):
                 atual = atual.dir
             else:
                 atual = atual.esq
-        
+
         return False
+
+    #Diferente de busca(), que só confirma se existe, essa função devolve o próprio livro encontrado
+    #ou None quando o código não está cadastrado, pra quem chamar poder tratar os dois casos
+    def buscaLivro(self, codigo):
+        if(self.__raiz == None):
+            return None
+
+        atual = self.__raiz
+        while(atual != None):
+            if(codigo == atual.info.codigo):
+                return atual.info
+
+            if(codigo > atual.info.codigo):
+                atual = atual.dir
+            else:
+                atual = atual.esq
+
+        return None
+
+    #Percorre em ordem, mas só desce pros ramos que podem ter algo dentro do intervalo,
+    #assim evita visitar a árvore inteira quando o intervalo é pequeno
+    def __buscaIntervalo(self, raiz, codigoInicial, codigoFinal, encontrados):
+        if(raiz == None):
+            return
+
+        if(raiz.info.codigo > codigoInicial):
+            self.__buscaIntervalo(raiz.esq, codigoInicial, codigoFinal, encontrados)
+
+        if(codigoInicial <= raiz.info.codigo <= codigoFinal):
+            encontrados.append(raiz.info)
+
+        if(raiz.info.codigo < codigoFinal):
+            self.__buscaIntervalo(raiz.dir, codigoInicial, codigoFinal, encontrados)
+
+    def buscaIntervalo(self, codigoInicial, codigoFinal):
+        encontrados = []
+        self.__buscaIntervalo(self.__raiz, codigoInicial, codigoFinal, encontrados)
+        return encontrados
 
     def __procuraMenor(self, atual):
         no1 = atual
@@ -169,12 +229,25 @@ class AvlTree:
 
         return atual    
     
-    def remove(self, valor):        
+    def remove(self, valor):
         if(self.__raiz == None or not self.busca(valor)):
             return False #árvore vazia ou valor não existe na árvore
         else:
             self.__raiz = self.__removeValor(self.__raiz, valor)
-            return True    
+            return True
+
+    #A árvore só sabe remover recebendo um Livro (pra comparar com __lt__/__eq__), então
+    #essa função busca o livro pelo código e manda ele mesmo pra remove(), evitando que quem
+    #chama de fora precise montar um Livro só pra conseguir remover
+    def removeCodigo(self, codigo):
+        livro = self.buscaLivro(codigo)
+        #Aqui a implementação do __equal__ trouxe dor de cabeça, pois == chama __equal__ independente do caso quando
+        #relacionado a classe Livro, o que fez com que gerasse erros e eu tive que procurar uma forma de comparar se é None
+        #de um outra forma. Usando o "is None" foi a alternativa que resolvi usar.
+        if(livro is None):
+            return False
+        else:
+            return self.remove(livro)
 
     def __preOrdem(self,raiz):
         if(raiz != None):
